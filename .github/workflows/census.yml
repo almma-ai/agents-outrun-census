@@ -1,0 +1,49 @@
+name: monthly census
+on:
+  schedule:
+    - cron: "17 3 1 * *"      # 03:17 UTC on the 1st of every month
+  workflow_dispatch:
+    inputs:
+      max_items:
+        description: "files per GitHub source (default 12000)"
+        default: "12000"
+permissions:
+  contents: write
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - name: scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.CENSUS_GH_TOKEN || secrets.GITHUB_TOKEN }}
+          CENSUS_MAX_ITEMS: ${{ github.event.inputs.max_items || '12000' }}
+        run: |
+          EDITION=$(date -u +%Y-%m)
+          echo "EDITION=$EDITION" >> $GITHUB_ENV
+          python -m census.cli scan --edition "$EDITION"
+      - name: aggregate and publish
+        run: |
+          python -m census.cli aggregate --edition "$EDITION"
+          python -m census.cli publish
+      - name: commit edition (append-only)
+        run: |
+          git config user.name "census-bot"
+          git config user.email "census-bot@users.noreply.github.com"
+          git add data/raw/$EDITION data/editions/$EDITION site/index.html
+          git commit -m "Edition $EDITION: $(python -c "import json;print(json.load(open('data/editions/$EDITION/edition.json'))['meta']['units'])") units" || echo "nothing to commit"
+          git push
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: . }
+  pages:
+    needs: census
+    permissions: { pages: write, id-token: write }
+    environment: { name: github-pages, url: ${{ steps.deployment.outputs.page_url }} }
+    runs-on: ubuntu-latest
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
