@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+# raw files written with --keep-ids contain repo paths; never commit them
+data/raw/**/*.keepids.jsonl
