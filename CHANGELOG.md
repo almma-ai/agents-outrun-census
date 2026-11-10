@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 · 2026-11-10 · manifest 1.0
+- census.yml: `environment` written in multi-line form; the flow-mapping form with `${{ }}` did not parse on GitHub.
+- LICENSE copyright line completed.
+
 ## 0.1.0 · 2026-11-09 · manifest 1.0
 - First instrument. Sources: Claude Code subagents, Copilot custom agents, CrewAI (crew.py, agents.yaml),
   LangGraph (langgraph.json + graph module, Python and TypeScript), A2A agent cards, MCP client configs
