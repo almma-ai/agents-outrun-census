@@ -39,11 +39,11 @@ HOLDING_ACTIONS = {"hand_off", "ask_requester", "hold_for_approval"}
 LIMIT_FIELDS = ["max_tool_calls_per_run", "max_spend_per_run", "rate_limit_per_hour"]
 
 
-# JSON Schema per spec version, from almma-ai/delegation-charter. Pin to a commit
-# once the schema is merged, so a later edit there cannot change a past result.
+# JSON Schema per spec version, from almma-ai/delegation-charter, pinned to the
+# commit that added it, so a later edit there cannot change a past result.
 SCHEMA_URLS = {
     "delegation-charter/0.1.2":
-        "https://raw.githubusercontent.com/almma-ai/delegation-charter/main/schema/charter-0.1.2.schema.json",
+        "https://raw.githubusercontent.com/almma-ai/delegation-charter/cc625c9b1eb040bf5542a198f2dc680f7df4807b/schema/charter-0.1.2.schema.json",
 }
 
 
