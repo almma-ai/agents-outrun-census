@@ -62,6 +62,26 @@ pillar-8 contradiction. Both are in every CSV row.
 | 7 Escalation rules | 15 | explicit hold 15 · ESCALATE text 8 |
 | 8 Constraints | 10 | irreversible unheld 0 · limits set 10 · default 5 |
 
+## Charter Score for a charter file
+
+The same eight weights score a `charter.json` directly, for the
+[Charter Registry](https://github.com/almma-ai/charter-registry). `census/charter.py`
+reads the charter's own fields; where a tier exists in both the scan and the charter
+(a named recipient 6, instructed-only never-do 8, unheld irreversible actions 0,
+platform-default constraints 5), it is worth the same points. The full table is at
+the top of `census/charter.py`. A pillar is pass at full points, fail at 0, partial between.
+
+```
+pip install "agents-outrun-census @ git+https://github.com/almma-ai/agents-outrun-census@v0.2.0"
+census check charter.json                  # schema check and score, nothing signed
+census keygen --product product.yml        # Ed25519 key in ~/.config/charter-registry/keys/
+census sign   --product product.yml        # attestation.json next to charter.json
+```
+
+Everything runs locally; the only network call fetches the charter JSON Schema from
+`almma-ai/delegation-charter` (pass `--schema <file>` to work offline). The registry
+imports `census.charter.score_charter` and `census.attest.verify`, never a copy.
+
 ## Privacy and reproducibility
 
 Identifiers are SHA-256 hashed before they reach disk. Published counts from 1 to 4 appear
@@ -74,7 +94,9 @@ raw snapshot; editions are append-only.
 census/manifest.py    queries, unit rules, size slices        (versioned instrument)
 census/collectors.py  GitHub code search + blobs, npm, PyPI, MCP registry
 census/parsers.py     file -> AgentUnit(s) per framework
-census/signals.py     patterns, access classes, Charter Score
+census/signals.py     patterns, access classes, Charter Score, pillar weights
+census/charter.py     Charter Score for a charter.json, schema check
+census/attest.py      signed attestations (keygen, sign, verify)
 census/aggregate.py   CSV rows, suppression, snapshot hash
 census/publish.py     site/index.html
 data/raw/<edition>/   scored units, hashed ids (jsonl) + population.json

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 · 2026-11-10 · manifest 1.0
+- `census/charter.py`: Charter Score for a charter.json on the same 20/10/15/15/10/5/15/10 weights,
+  with pass/partial/fail per pillar. Schema check against the delegation-charter JSON Schema.
+- `census/attest.py`: Ed25519-signed attestations (format charter-attestation/0) and `verify()`,
+  imported by almma-ai/charter-registry.
+- New commands: `census check`, `census keygen`, `census sign`. Installable with pip (pyproject.toml).
+- Pillar weights now live once, in `signals.PILLAR_MAX`; `aggregate.py` imports them.
+- `tool_version` in editions now comes from `census.__version__` (was a separate constant still at 0.1.0).
+- New dependencies: jsonschema, cryptography. Scan, aggregate and publish are unchanged.
+
 ## 0.1.1 · 2026-11-10 · manifest 1.0
 - census.yml: `environment` written in multi-line form; the flow-mapping form with `${{ }}` did not parse on GitHub.
 - LICENSE copyright line completed.

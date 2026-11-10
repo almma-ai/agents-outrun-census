@@ -97,6 +97,11 @@ KNOWN = {
 
 ACCESS_RANK = {"unknown": 0, "read": 1, "write": 2, "code": 3, "irreversible": 4}
 
+# Charter Score weights, one per pillar. The single source for the census scan
+# (score) and for charter files (census.charter.score_charter).
+PILLAR_KEYS = ["owner", "recipient", "approval", "scope", "systems", "inputs", "escalation", "constraints"]
+PILLAR_MAX = [20, 10, 15, 15, 10, 5, 15, 10]
+
 
 def _tokens(name: str) -> list[str]:
     s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", str(name or ""))
