@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       max_items:
-        description: "files per GitHub source (default 12000)"
+        description: "files per GitHub source (default 4000)"
         default: "4000"
 permissions:
   contents: write
