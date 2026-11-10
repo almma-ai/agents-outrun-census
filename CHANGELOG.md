@@ -3,6 +3,7 @@
 ## 0.1.1 · 2026-11-10 · manifest 1.0
 - census.yml: `environment` written in multi-line form; the flow-mapping form with `${{ }}` did not parse on GitHub.
 - LICENSE copyright line completed.
+- Scheduled run capped at 4,000 files per source; a 2,000-file run takes 1h53m on a GitHub-hosted runner.
 
 ## 0.1.0 · 2026-11-09 · manifest 1.0
 - First instrument. Sources: Claude Code subagents, Copilot custom agents, CrewAI (crew.py, agents.yaml),

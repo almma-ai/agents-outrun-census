@@ -6,13 +6,13 @@ on:
     inputs:
       max_items:
         description: "files per GitHub source (default 12000)"
-        default: "12000"
+        default: "4000"
 permissions:
   contents: write
 jobs:
   census:
     runs-on: ubuntu-latest
-    timeout-minutes: 720
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,7 +21,7 @@ jobs:
       - name: scan
         env:
           GITHUB_TOKEN: ${{ secrets.CENSUS_GH_TOKEN || secrets.GITHUB_TOKEN }}
-          CENSUS_MAX_ITEMS: ${{ github.event.inputs.max_items || '12000' }}
+          CENSUS_MAX_ITEMS: ${{ github.event.inputs.max_items || '4000' }}
         run: |
           EDITION=$(date -u +%Y-%m)
           echo "EDITION=$EDITION" >> $GITHUB_ENV
