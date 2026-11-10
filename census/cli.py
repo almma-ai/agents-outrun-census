@@ -3,6 +3,11 @@ census scan      -> data/raw/<edition>/*.jsonl        (hashed ids, scored units)
 census aggregate -> data/editions/<edition>/census_agents.csv, capabilities.csv, edition.json
 census publish   -> site/index.html (all editions)
 
+For charter owners (runs on your machine; nothing is uploaded):
+census keygen --product product.yml       -> a signing key for the Charter Registry
+census check  charter.json                -> schema check and Charter Score, no signature
+census sign   --product product.yml       -> attestation.json next to charter.json
+
 Example (pilot, ~150 files per GitHub source):
   python -m census.cli scan --edition 2026-11 --max-items 150
   python -m census.cli aggregate --edition 2026-11
@@ -155,6 +160,67 @@ def cmd_publish(a):
     _log(f"wrote {out}")
 
 
+def _report(scored: dict, errors: list[str]) -> None:
+    out = sys.stdout
+    if errors:
+        print("Schema: INVALID", file=out)
+        for e in errors:
+            print(f"  - {e}", file=out)
+    else:
+        print("Schema: valid", file=out)
+    print(f"Charter Score: {scored['charter_score']}/100", file=out)
+    for p in scored["pillars"]:
+        print(f"  {p['n']}. {p['label']:<24} {p['points']:>2}/{p['max']:<2} {p['result']:<7} {p['reason']}", file=out)
+
+
+def _load_product(path: str) -> dict:
+    import yaml
+    with open(path, encoding="utf-8") as f:
+        product = yaml.safe_load(f) or {}
+    if not isinstance(product, dict) or not product.get("product_slug"):
+        raise SystemExit(f"{path}: needs at least product_slug")
+    return product
+
+
+def cmd_keygen(a):
+    from .attest import default_key_path, generate_key
+    slug = a.slug or _load_product(a.product)["product_slug"]
+    path = Path(a.key) if a.key else default_key_path(slug)
+    pub = generate_key(path)
+    print(f"Private key: {path}  (keep it; never commit it)")
+    print("Add this line to product.yml:")
+    print(f"public_key: {pub}")
+
+
+def cmd_check(a):
+    from .charter import load_schema, score_charter, validate
+    raw = Path(a.charter).read_bytes()
+    charter = json.loads(raw)
+    errors = [] if a.no_schema else validate(charter, load_schema(charter.get("spec"), a.schema))
+    _report(score_charter(charter), errors)
+    sys.exit(1 if errors else 0)
+
+
+def cmd_sign(a):
+    from .attest import build, default_key_path, load_key, public_key_str
+    from .charter import load_schema, score_charter, validate
+    product = _load_product(a.product)
+    charter_path = Path(a.charter) if a.charter else Path(a.product).parent / "charter.json"
+    raw = charter_path.read_bytes()
+    charter = json.loads(raw)
+    errors = validate(charter, load_schema(charter.get("spec"), a.schema))
+    _report(score_charter(charter), errors)
+    if errors:
+        raise SystemExit("Not signed: fix the schema errors above, then sign again.")
+    key = load_key(Path(a.key) if a.key else default_key_path(product["product_slug"]))
+    if product.get("public_key") and product["public_key"] != public_key_str(key.public_key()):
+        raise SystemExit("Not signed: this key does not match public_key in product.yml.")
+    att = build(raw, product, key)
+    out = Path(a.out) if a.out else charter_path.parent / "attestation.json"
+    out.write_text(json.dumps(att, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"Signed: {out}  ({att['charter_hash'][:19]}…)")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="census")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -175,6 +241,23 @@ def main(argv=None):
     g.set_defaults(fn=cmd_aggregate)
     p = sub.add_parser("publish")
     p.set_defaults(fn=cmd_publish)
+    k = sub.add_parser("keygen", help="create a Charter Registry signing key")
+    k.add_argument("--product", default="product.yml")
+    k.add_argument("--slug", help="product slug, if there is no product.yml yet")
+    k.add_argument("--key", help="where to write the key (default ~/.config/charter-registry/keys/<slug>.pem)")
+    k.set_defaults(fn=cmd_keygen)
+    c = sub.add_parser("check", help="schema check and Charter Score for a charter, without signing")
+    c.add_argument("charter", nargs="?", default="charter.json")
+    c.add_argument("--schema", help="local schema file instead of fetching it")
+    c.add_argument("--no-schema", action="store_true", help="score only")
+    c.set_defaults(fn=cmd_check)
+    g2 = sub.add_parser("sign", help="score a charter and write a signed attestation.json")
+    g2.add_argument("--product", default="product.yml")
+    g2.add_argument("--charter", help="default: charter.json next to product.yml")
+    g2.add_argument("--key", help="default ~/.config/charter-registry/keys/<slug>.pem")
+    g2.add_argument("--schema", help="local schema file instead of fetching it")
+    g2.add_argument("--out", help="default: attestation.json next to charter.json")
+    g2.set_defaults(fn=cmd_sign)
     a = ap.parse_args(argv)
     a.fn(a)
 

@@ -10,9 +10,9 @@ import statistics
 from collections import defaultdict
 from pathlib import Path
 
+from . import __version__ as TOOL_VERSION
 from .manifest import MANIFEST_VERSION, SUPPRESS_BELOW
-
-TOOL_VERSION = "0.1.0"
+from .signals import PILLAR_MAX
 
 COUNT_FIELDS = [
     "units", "with_instructions", "with_tools", "tools_all", "consequential", "external_reach",
@@ -29,7 +29,6 @@ RATE_FIELDS = ["outrun_rate", "outrun_strict_rate", "irreversible_unheld_rate", 
 STAT_FIELDS = ["instructions_chars_median", "charter_score_median", "charter_score_p25", "charter_score_p75",
                "pillar_owner_avg", "pillar_recipient_avg", "pillar_approval_avg", "pillar_scope_avg",
                "pillar_systems_avg", "pillar_inputs_avg", "pillar_escalation_avg", "pillar_constraints_avg"]
-PILLAR_MAX = [20, 10, 15, 15, 10, 5, 15, 10]
 
 CSV_COLUMNS = (["edition", "snapshot_utc", "source", "framework", "kind"] + COUNT_FIELDS + RATE_FIELDS
                + STAT_FIELDS + ["sampled", "population_estimate", "tool_version", "manifest_version", "raw_sha256"])

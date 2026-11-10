@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agents-outrun-census"
+dynamic = ["version"]
+description = "The Agents Outrun Census, and the Charter Score for charter files (census check, census sign)."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+  "requests>=2.31",
+  "pyyaml>=6.0",
+  "jsonschema>=4.21",
+  "cryptography>=42",
+]
+
+[project.scripts]
+census = "census.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/almma-ai/agents-outrun-census"
+
+[tool.setuptools]
+packages = ["census"]
+
+[tool.setuptools.dynamic]
+version = { attr = "census.__version__" }
