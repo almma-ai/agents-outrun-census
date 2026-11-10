@@ -1,9 +1,0 @@
-{
- "claude_code_subagent": 280576,
- "copilot_custom_agent": 122368,
- "crewai": 13605,
- "langgraph": 8720,
- "a2a_agent_card": 531,
- "mcp_client_config": 87016,
- "librechat_config": 214
-}
